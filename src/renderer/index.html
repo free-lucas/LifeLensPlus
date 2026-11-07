@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' file:;"
+    />
+    <title>LifeLensPlus</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>LifeLensPlus 活动追踪器</h1>
+        <p class="subtitle">每 20 秒截屏，并使用本地 Ollama 模型分析用户活动</p>
+      </div>
+      <div class="header-pills">
+        <span id="summary-state" class="pill pill-busy" hidden>汇总中</span>
+        <span id="state" class="pill pill-off">已停止</span>
+        <button id="quit" class="quit-button" type="button" title="退出 LifeLensPlus">退出</button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview" role="tab">记录</button>
+      <button class="tab" data-tab="dynamics" role="tab">动态</button>
+      <button class="tab" data-tab="diary" role="tab">日记</button>
+      <button class="tab" data-tab="kanban" role="tab">看板</button>
+      <button class="tab" data-tab="search" role="tab">搜索</button>
+      <button class="tab" data-tab="ask" role="tab">问答</button>
+    </nav>
+
+    <div id="view-overview" class="view">
+    <section class="panel">
+      <h2 class="panel-title"><span class="badge">1</span>控制与状态</h2>
+      <div class="toolbar">
+        <button id="start" class="primary">开始监控</button>
+        <button id="stop" class="danger">停止监控</button>
+        <button id="open-dir">打开数据文件夹</button>
+        <button id="refresh">刷新</button>
+      </div>
+      <dl class="status-grid">
+        <div>
+          <dt>运行状态</dt>
+          <dd><span id="run-dot" class="dot"></span><span id="stat-running">已停止</span></dd>
+        </div>
+        <div>
+          <dt>待分析</dt>
+          <dd id="stat-queue">0</dd>
+        </div>
+        <div>
+          <dt>最后截图</dt>
+          <dd><span id="stat-last">—</span><span id="stat-last-rel" class="rel"></span></dd>
+        </div>
+      </dl>
+      <p class="panel-note"><span id="note-interval">每 20 秒截屏</span> · <span id="note-model">模型 —</span></p>
+    </section>
+
+    <p id="error" class="error" hidden></p>
+
+    <section class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">总截图数</span>
+        <span id="stat-total" class="stat-value">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">已分析</span>
+        <span id="stat-analyzed" class="stat-value">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">错误数</span>
+        <span id="stat-errors" class="stat-value">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">已跳过重复</span>
+        <span id="stat-skipped" class="stat-value">0</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title"><span class="badge">2</span>AI 队列</h2>
+      <div class="toolbar">
+        <button id="ai-pause" class="primary">暂停 AI</button>
+        <button id="ai-resume" class="danger">继续 AI</button>
+      </div>
+      <dl class="status-grid">
+        <div>
+          <dt>AI 状态</dt>
+          <dd><span id="ai-dot" class="dot"></span><span id="ai-state">—</span></dd>
+        </div>
+        <div>
+          <dt>当前任务</dt>
+          <dd id="ai-current">—</dd>
+        </div>
+      </dl>
+      <div class="ai-stats">
+        <span>待处理 <b id="ai-pending">0</b></span>
+        <span>进行中 <b id="ai-processing">0</b></span>
+        <span>已完成 <b id="ai-completed">0</b></span>
+        <span>失败 <b id="ai-failed">0</b></span>
+        <span>重试中 <b id="ai-retrying">0</b></span>
+        <span>已取消 <b id="ai-cancelled">0</b></span>
+      </div>
+      <p class="panel-note" id="ai-note">AI 不可用不会影响截图记录。</p>
+      <ul id="ai-log" class="ai-log"><li class="empty">暂无任务日志</li></ul>
+    </section>
+
+    <section class="records">
+      <h2 class="panel-title"><span class="badge">3</span>活动时间线</h2>
+      <div id="timeline-filters" class="timeline-filters">
+        <input
+          id="timeline-search"
+          class="timeline-search"
+          type="search"
+          placeholder="搜索活动 / 摘要 / 项目 / 关键词"
+          autocomplete="off"
+        />
+        <select id="timeline-range" class="timeline-select" aria-label="时间范围">
+          <option value="all">全部时间</option>
+          <option value="today">今天</option>
+          <option value="yesterday">昨天</option>
+          <option value="last7">最近 7 天</option>
+          <option value="custom">自定义时间</option>
+        </select>
+        <select id="timeline-category" class="timeline-select" aria-label="分类">
+          <option value="">全部分类</option>
+        </select>
+        <select id="timeline-project" class="timeline-select" aria-label="项目">
+          <option value="">全部项目</option>
+        </select>
+        <select id="timeline-status" class="timeline-select" aria-label="AI 状态">
+          <option value="">全部状态</option>
+          <option value="COMPLETED">已完成</option>
+          <option value="PENDING">分析中</option>
+          <option value="FAILED">失败</option>
+        </select>
+        <span id="timeline-custom-range" class="timeline-custom-range" hidden>
+          <input id="timeline-from" type="date" aria-label="开始日期" />
+          <span class="timeline-range-sep">~</span>
+          <input id="timeline-to" type="date" aria-label="结束日期" />
+        </span>
+        <button id="timeline-clear" class="timeline-clear">清除筛选</button>
+      </div>
+      <div id="timeline" class="timeline">
+        <p class="timeline-state">加载中…</p>
+      </div>
+      <div class="timeline-footer">
+        <button id="timeline-more" hidden>加载更多</button>
+      </div>
+    </section>
+    </div>
+
+    <div id="view-dynamics" class="view" hidden>
+      <section class="panel">
+        <h2 class="panel-title"><span class="badge">4</span>最近 12 小时（每个点 10 分钟）</h2>
+        <div class="heatmap-legend">
+          <span class="heatmap-legend-item"><i class="heat-cell cat-fun"></i>娱乐</span>
+          <span class="heatmap-legend-item"><i class="heat-cell cat-work"></i>工作</span>
+          <span class="heatmap-legend-item"><i class="heat-cell cat-study"></i>学习</span>
+          <span class="heatmap-legend-item"><i class="heat-cell cat-social"></i>社交</span>
+          <span class="heatmap-legend-item"><i class="heat-cell cat-pending"></i>汇总中</span>
+          <span class="heatmap-legend-item"><i class="heat-cell"></i>无记录</span>
+        </div>
+        <div id="heatmap" class="heatmap">
+          <p class="timeline-state">加载中…</p>
+        </div>
+        <p class="panel-note">点一个方块查看那个时间段的活动。</p>
+        <div id="heatmap-detail" class="heatmap-detail" hidden></div>
+      </section>
+
+      <section class="records">
+        <h2 class="panel-title"><span class="badge">5</span>动态时间线</h2>
+        <div id="dynamics-filters" class="timeline-filters">
+          <select id="dynamics-project" class="timeline-select" aria-label="项目">
+            <option value="">全部项目</option>
+          </select>
+          <select id="dynamics-software" class="timeline-select" aria-label="软件">
+            <option value="">全部软件</option>
+          </select>
+          <select id="dynamics-range" class="timeline-select" aria-label="时间范围">
+            <option value="all">全部时间</option>
+            <option value="today">今天</option>
+            <option value="yesterday">昨天</option>
+            <option value="last7">最近 7 天</option>
+            <option value="custom">自定义时间</option>
+          </select>
+          <span id="dynamics-custom-range" class="timeline-custom-range" hidden>
+            <input id="dynamics-from" type="date" aria-label="开始日期" />
+            <span class="timeline-range-sep">~</span>
+            <input id="dynamics-to" type="date" aria-label="结束日期" />
+          </span>
+          <button id="dynamics-clear" class="timeline-clear">清除筛选</button>
+        </div>
+        <div id="dynamics-timeline" class="dynamics-timeline">
+          <p class="timeline-state">加载中…</p>
+        </div>
+        <p id="dynamics-status" class="dynamics-status" hidden></p>
+        <div id="dynamics-sentinel" class="dynamics-sentinel" aria-hidden="true"></div>
+      </section>
+    </div>
+
+    <div id="view-diary" class="view" hidden>
+      <section class="panel">
+        <h2 class="panel-title"><span class="badge">6</span>日记日历</h2>
+        <div id="diary-calendar" class="diary-calendar">
+          <p class="timeline-state">加载中…</p>
+        </div>
+        <p class="panel-note">点某一天查看那一天的日记；默认打开的是前一天的日记。</p>
+        <p id="diary-status" class="diary-status" hidden></p>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title"><span class="badge">7</span>这一天的日记</h2>
+        <div id="diary-detail" class="diary-detail">
+          <p class="timeline-state">加载中…</p>
+        </div>
+      </section>
+    </div>
+
+    <div id="view-kanban" class="view" hidden>
+      <section class="panel">
+        <h2 class="panel-title"><span class="badge">8</span>看板</h2>
+        <div class="kanban-toolbar">
+          <div id="kanban-periods" class="kanban-periods" role="group" aria-label="统计周期">
+            <button type="button" class="kanban-period" data-period="day">日</button>
+            <button type="button" class="kanban-period" data-period="week">周</button>
+            <button type="button" class="kanban-period" data-period="month">月</button>
+            <button type="button" class="kanban-period" data-period="year">年</button>
+          </div>
+          <div class="kanban-nav">
+            <button id="kanban-prev" type="button" aria-label="上一期">‹</button>
+            <span id="kanban-label" class="kanban-label">—</span>
+            <button id="kanban-next" type="button" aria-label="下一期">›</button>
+          </div>
+          <button id="kanban-today" type="button">回到今天</button>
+          <input id="kanban-date" class="kanban-date" type="date" aria-label="跳到某一天" />
+        </div>
+        <div id="kanban-cards" class="stats-row kanban-cards"></div>
+        <p id="kanban-status" class="kanban-status" hidden></p>
+      </section>
+      <div id="kanban-charts" class="kanban-charts"></div>
+    </div>
+
+    <div id="view-search" class="view" hidden>
+      <section class="panel">
+        <h2 class="panel-title"><span class="badge">9</span>搜索记忆</h2>
+        <div class="search-bar">
+          <input
+            id="search-input"
+            class="search-input"
+            type="search"
+            placeholder="用一句话描述你想找的记忆，例如：我最近什么时候研究过 AI Agent？"
+            autocomplete="off"
+            aria-label="搜索记忆"
+          />
+          <button id="search-submit" class="primary" type="button">搜索</button>
+        </div>
+        <p class="panel-note">语义搜索：把这句话变成向量，在 20 秒记录 / 10 分钟汇总 / 日记三层记忆里找最接近的片段。</p>
+        <p id="search-status" class="search-status" hidden></p>
+        <div id="search-results" class="search-results">
+          <p class="timeline-state">输入一句话，搜索你的历史记忆。</p>
+        </div>
+        <div id="search-recent-wrap" class="search-recent" hidden>
+          <h3 class="search-recent-title">最近搜索</h3>
+          <div id="search-recent" class="search-recent-list"></div>
+        </div>
+      </section>
+    </div>
+
+    <div id="view-ask" class="view" hidden>
+      <section class="panel">
+        <h2 class="panel-title"><span class="badge">10</span>问问我的生活</h2>
+        <div class="search-bar">
+          <input
+            id="ask-input"
+            class="search-input"
+            type="search"
+            placeholder="问一个关于你过去的问题，例如：最近一段时间我主要在做什么？"
+            autocomplete="off"
+            aria-label="问问我的生活"
+          />
+          <button id="ask-submit" class="primary" type="button">提问</button>
+        </div>
+        <p class="panel-note">先用语义检索在 20 秒记录 / 10 分钟汇总 / 日记里找到相关记忆，再由本地模型基于这些记忆回答。</p>
+        <p id="ask-status" class="search-status" hidden></p>
+        <div id="ask-answer" class="ask-answer">
+          <p class="timeline-state">问一个关于你过去的问题，回答只依据检索到的历史记忆。</p>
+        </div>
+        <div id="ask-memories-wrap" class="ask-memories" hidden>
+          <h3 class="search-recent-title">相关记忆</h3>
+          <div id="ask-memories"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="timeline.js"></script>
+    <script src="dynamics.js"></script>
+    <script src="diary.js"></script>
+    <script src="kanban.js"></script>
+    <script src="search.js"></script>
+    <script src="ask.js"></script>
+    <script src="renderer.js"></script>
+  </body>
+</html>

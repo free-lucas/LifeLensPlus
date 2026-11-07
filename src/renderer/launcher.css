@@ -1,0 +1,386 @@
+/* Phase 13：悬浮入口的样式。只有 56x56 一个圆标，
+   所以独立成文件，而不是往主界面的 styles.css 里塞（也正好让 CSP 保持 style-src 'self'）。 */
+
+:root { color-scheme: dark; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html,
+body {
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  /* 透明窗口：这里是窗口的底色，不是圆标的底色。 */
+  background: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 与主界面同一套视觉语言：深色玻璃底 + 高光描边，
+   再叠一层青蓝→蓝紫的冷色光，让小图标在桌面上也有辨识度。 */
+.ball {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dce8ff;
+  border: 1px solid rgba(160, 190, 255, 0.38);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(125, 240, 255, 0.34), rgba(125, 240, 255, 0) 58%),
+    radial-gradient(circle at 76% 82%, rgba(177, 140, 255, 0.3), rgba(177, 140, 255, 0) 60%),
+    linear-gradient(155deg, #1b2547 0%, #10172b 55%, #0b101d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -8px 16px rgba(96, 138, 255, 0.14),
+    0 6px 18px rgba(4, 8, 20, 0.5),
+    0 0 0 0 rgba(125, 240, 255, 0);
+  cursor: grab;
+  transition: transform 0.18s ease, box-shadow 0.25s ease, border-color 0.25s ease, filter 0.25s ease;
+  animation: ball-breathe 3.4s ease-in-out infinite;
+}
+
+/* 沿圆边缓慢扫过的一圈微光：用遮罩只留 1.5px 的环，不遮挡中间的光圈。 */
+.ball::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(125, 240, 255, 0) 0deg,
+    rgba(125, 240, 255, 0) 200deg,
+    rgba(125, 240, 255, 0.85) 268deg,
+    rgba(177, 140, 255, 0.55) 296deg,
+    rgba(125, 240, 255, 0) 340deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  opacity: 0.65;
+  animation: ring-spin 5s linear infinite;
+  pointer-events: none;
+}
+
+.ball:hover {
+  transform: scale(1.07);
+  border-color: rgba(180, 210, 255, 0.7);
+  animation-play-state: paused;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -8px 16px rgba(96, 138, 255, 0.18),
+    0 10px 26px rgba(4, 8, 20, 0.6),
+    0 0 16px rgba(125, 240, 255, 0.35);
+}
+
+.glyph {
+  position: relative;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  transition: opacity 0.12s linear;
+}
+
+/* 虚线轨道沿自身中心匀速旋转。 */
+.orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring-spin 7s linear infinite reverse;
+}
+
+/* 瞳孔的呼吸光晕：轻、慢，表示「镜头在线」。 */
+.core {
+  filter: drop-shadow(0 0 3px rgba(157, 246, 255, 0.95));
+  animation: core-pulse 2.4s ease-in-out infinite;
+}
+
+/* 拖动中：光标变成抓手、圆标轻微下压，给一个「正被按住」的反馈。 */
+body.dragging .ball,
+.ball:active {
+  cursor: grabbing;
+  transform: scale(0.96);
+  animation-play-state: paused;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -8px 16px rgba(96, 138, 255, 0.1),
+    0 3px 10px rgba(4, 8, 20, 0.55);
+}
+
+@keyframes ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ball-breathe {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -8px 16px rgba(96, 138, 255, 0.14),
+      0 6px 18px rgba(4, 8, 20, 0.5),
+      0 0 10px rgba(125, 240, 255, 0.08);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -8px 16px rgba(96, 138, 255, 0.14),
+      0 6px 18px rgba(4, 8, 20, 0.5),
+      0 0 20px rgba(125, 240, 255, 0.28);
+  }
+}
+
+@keyframes core-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+/* ---- Phase 13.1：录制状态（持续态，由 status 事件切换 body class）---- */
+
+/* 暂停：轨道环停转、瞳孔变暗偏灰、球体整体亮度降一档，连呼吸光晕也停 ——
+   整个圆标完全静止，一眼就能看出「它现在不动」。
+   （.ball 只写进 state-paused，不写进 state-running：后者会盖掉拖动的按下反馈。） */
+body.state-paused .ball {
+  filter: brightness(0.62) saturate(0.72);
+  border-color: rgba(150, 168, 195, 0.3);
+  animation-play-state: paused;
+}
+
+body.state-paused .ball::before,
+body.state-paused .orbit,
+body.state-paused .core {
+  animation-play-state: paused;
+}
+
+/* 瞳孔在暂停时偏灰：不只是整体变暗，还去饱和。 */
+body.state-paused .core { fill: #8e9cb3; }
+
+/* 录制中：显式写出来，免得将来改样式时「默认外观」与「录制中」悄悄漂移。 */
+body.state-running .ball::before,
+body.state-running .orbit,
+body.state-running .core {
+  animation-play-state: running;
+}
+
+/* ---- Phase 13.1：瞬时特效（由 record / analysis / error 事件触发）---- */
+
+/* 三个特效的光圈共用 .ball::after：它现在还是空层，正好让 ::before（转动的微光）保持原样。
+   每个特效的动画时长就是它的持续时间，结束后由 launcher.js 在 animationend 里回收 class。 */
+
+/* 快门：中心向外扩散一圈白→青的光圈 + 图标内部闪一次高光（0.4s）。 */
+body.effect-shutter .ball::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: shutter-ring 0.4s ease-out;
+}
+
+body.effect-shutter .glyph { animation: shutter-flash 0.4s ease-out; }
+
+/* 分析成功：瞳孔绿闪 + 淡绿光圈扩散 + 对勾淡入淡出（0.6s）。 */
+body.effect-success .ball::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid rgba(141, 255, 190, 0.85);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: success-ring 0.6s ease-out;
+}
+
+body.effect-success .core { animation: success-core 0.6s ease-out; }
+body.effect-success .check { animation: success-check 0.6s ease-out; }
+
+/* 错误：边框红闪一下（0.5s）。不弹 toast、不阻塞操作，详情仍在主界面日志里。 */
+body.effect-error .ball::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid rgba(255, 92, 92, 0.95);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: error-ring 0.5s ease-out;
+}
+
+body.effect-error .core { animation: error-core 0.5s ease-out; }
+
+/* 对勾默认透明：只有 .effect-success 期间才看得见。 */
+.check { opacity: 0; }
+
+/* ---- Phase 13.2：三只小镜（瞬时特效的主角，素材在 src/renderer/assets/）----
+
+   小镜的头部圆和这颗球本来就是同一个形状，所以上场时直接铺满整颗球，把原来的光圈图标
+   换下来（两者叠在一起会互相打架）。出场与回收的时机仍由上面那几条光圈动画决定：
+   每只小镜的 animation-duration 与它对应的光圈一致，一个 class 同时管住两边。 */
+
+.mascot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  /* 不用 display: none：这里靠 visibility + opacity 藏，JS 那边再把 SMIL 时间轴冻住，
+     所以藏着的三只既不参与绘制，也不会自己空转。 */
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mascot > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+body.effect-shutter .glyph,
+body.effect-success .glyph,
+body.effect-error .glyph { opacity: 0; }
+
+body.effect-shutter .mascot-smug,
+body.effect-success .mascot-happy,
+body.effect-error .mascot-thinking {
+  visibility: visible;
+  animation: mascot-pop 0.4s ease-out;
+}
+
+/* 时长跟着各自的光圈走（success-ring 0.6s / error-ring 0.5s）：
+   两边不同长就会出现「光圈还在扩、小镜已经没了」。 */
+body.effect-success .mascot-happy { animation-duration: 0.6s; }
+body.effect-error .mascot-thinking { animation-duration: 0.5s; }
+
+/* ---- Phase 13.3 / 13.4：待机小镜是悬浮球的**默认脸** ----
+
+   录制中与暂停时都由它上场，替下那颗光圈圆标；只有三个瞬时态时才让位。
+   它和上面三只瞬时态的区别在于生命周期归谁管：
+
+     瞬时态   由 class 驱动，演完在 animationend 里回收 -> 用 mascot-pop（演完自己淡出）
+     默认脸   由 body.state-* 驱动，两个状态都在台上     -> 用 mascot-in（停在终态）
+
+   所以这里不能用 mascot-pop：它最后一帧是 opacity 0，脸会在 0.5 秒后自己消失。
+   基础值写 opacity: 1，动画只负责「淡入」这一下，fill-mode 默认 none，
+   动画结束回到基础值 = 停在可见状态。
+
+   「在不在录」的信号不靠这张脸，靠三样别的东西：
+     .ball 的亮度与去饱和、外围那圈扫光转不转（都在 .ball 上，见上面 state-paused 段），
+     以及这只小镜自己的时间轴 —— 录制中在演，暂停时冻住（launcher.js 的 applyState）。 */
+body.state-running .glyph,
+body.state-paused .glyph { opacity: 0; }
+
+body.state-running .mascot-idle,
+body.state-paused .mascot-idle {
+  visibility: visible;
+  opacity: 1;
+  animation: mascot-in 0.5s ease-out;
+}
+
+/* 两个状态下都照样会来瞬时事件（录制中自不必说，暂停也只是不再截图：
+   AI 队列里已经排着的任务还会跑完，analysis / error 照到）。两个都铺满整颗球，
+   叠在一起会互相打架，所以有瞬时态时让待机这只退场，把球让给那只来报信的。
+   选择器与上面 .glyph 那条一样逐个列出三个瞬时态：两边特异性相同（0,2,1），
+   所以这条必须写在上一条的后面才生效。 */
+body.effect-shutter .mascot-idle,
+body.effect-success .mascot-idle,
+body.effect-error .mascot-idle {
+  visibility: hidden;
+  opacity: 0;
+}
+
+@keyframes mascot-in {
+  0% { opacity: 0; transform: scale(0.88); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* 蹦一下再收：小镜是跳出来说句话，不是淡入的提示框。只用 scale，不产生位移与布局。 */
+@keyframes mascot-pop {
+  0% { opacity: 0; transform: scale(0.66); }
+  18% { opacity: 1; transform: scale(1.08); }
+  36% { transform: scale(0.98); }
+  54% { transform: scale(1.03); }
+  78% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+
+/* 降级用的 keyframes：只淡入淡出，不缩放。 */
+@keyframes mascot-fade {
+  0% { opacity: 0; }
+  25%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes shutter-ring {
+  0% { transform: scale(0.55); opacity: 0.95; border-color: rgba(255, 255, 255, 0.95); }
+  100% { transform: scale(1.5); opacity: 0; border-color: rgba(125, 240, 255, 0); }
+}
+
+@keyframes shutter-flash {
+  0%, 100% { filter: brightness(1); }
+  30% { filter: brightness(1.7); }
+}
+
+@keyframes success-ring {
+  0% { transform: scale(0.7); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes success-core {
+  0%, 100% { fill: #9df6ff; }
+  30% { fill: #8dffbe; }
+}
+
+@keyframes success-check {
+  0% { opacity: 0; }
+  25%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes error-ring {
+  0% { opacity: 0; }
+  25%, 60% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+@keyframes error-core {
+  0%, 100% { fill: #9df6ff; }
+  30% { fill: #ff6b6b; filter: drop-shadow(0 0 6px rgba(255, 92, 92, 0.95)); }
+}
+
+/* 降级用的 keyframes：只闪颜色，不带任何位移 / 缩放。 */
+@keyframes shutter-ring-flash {
+  0% { opacity: 0; border-color: rgba(255, 255, 255, 0.95); }
+  35% { opacity: 0.95; }
+  100% { opacity: 0; border-color: rgba(125, 240, 255, 0); }
+}
+
+@keyframes success-ring-flash {
+  0% { opacity: 0; }
+  35% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* 系统开启「减少动态效果」时停掉持续动画，保留静态外观。 */
+@media (prefers-reduced-motion: reduce) {
+  .ball,
+  .ball::before,
+  .orbit,
+  .core {
+    animation: none;
+  }
+
+  /* 瞬时特效不删动画，只换成「不位移、不缩放」的 keyframes：
+     class 是动画结束后在 animationend 里回收的，动画被删掉就会永远留在元素上。
+     瞳孔变色、图标高光、对勾显隐本来就没有位移，保持原样。 */
+  body.effect-shutter .ball::after { animation-name: shutter-ring-flash; }
+  body.effect-success .ball::after { animation-name: success-ring-flash; }
+  body.effect-shutter .mascot-smug,
+  body.effect-success .mascot-happy,
+  body.effect-error .mascot-thinking { animation-name: mascot-fade; }
+
+  /* 待机小镜的显隐是纯 CSS 的（不像瞬时态那样靠 animationend 回收），
+     所以这里可以像 .ball 一样直接删掉动画：淡入降级成「直接出现，之后静止」。 */
+  body.state-running .mascot-idle,
+  body.state-paused .mascot-idle { animation: none; }
+}

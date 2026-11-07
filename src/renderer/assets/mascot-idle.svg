@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="LifeLens 小镜 · 待机">
+  <defs>
+    <linearGradient id="glass-idle" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#1b2547"/>
+      <stop offset="0.55" stop-color="#10172b"/>
+      <stop offset="1" stop-color="#0b101d"/>
+    </linearGradient>
+    <linearGradient id="neon-idle" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7df0ff"/>
+      <stop offset="0.55" stop-color="#8fb0ff"/>
+      <stop offset="1" stop-color="#b18cff"/>
+    </linearGradient>
+    <radialGradient id="glow-idle">
+      <stop offset="0" stop-color="#7df0ff" stop-opacity="0.4"/>
+      <stop offset="0.55" stop-color="#8fb0ff" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#b18cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="eye-idle">
+      <stop offset="0" stop-color="#2b3c6e"/>
+      <stop offset="1" stop-color="#131c36"/>
+    </radialGradient>
+    <clipPath id="head-idle"><circle cx="100" cy="102" r="58"/></clipPath>
+    <clipPath id="eyel-idle"><ellipse cx="80" cy="96" rx="15" ry="15.5"/></clipPath>
+    <clipPath id="mouth-idle"><path d="M84 121 Q100 146 116 121 Z"/></clipPath>
+    <linearGradient id="scan-idle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7df0ff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#7df0ff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#7df0ff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#glow-idle)"/>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="22s" repeatCount="indefinite"/>
+    <circle cx="100" cy="100" r="86" fill="none" stroke="url(#neon-idle)" stroke-width="1.6" stroke-dasharray="4 9" stroke-linecap="round" opacity="0.62"/>
+    <circle cx="100" cy="14" r="7" fill="#9df6ff" opacity="0.2"/>
+    <circle cx="100" cy="14" r="3.2" fill="#9df6ff"/>
+  </g>
+  <g transform="translate(100 100)">
+    <g>
+      <animateTransform attributeName="transform" type="scale" values="1;1.018;1" dur="4.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+      <g transform="translate(-100 -100)">
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 6;0 -2;0 6" dur="5.4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+          <g>
+    <animateTransform attributeName="transform" type="rotate" values="-2 100 47;2 100 47;-2 100 47" dur="5.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+    <path d="M100 50 L100 26" stroke="#9df6ff" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    <circle cx="100" cy="25" r="4.6" fill="#9df6ff" opacity="0.28">
+      <animate attributeName="r" values="4.6;6.6;4.6" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="100" cy="25" r="3.2" fill="#9df6ff"/>
+  </g>
+
+    <circle cx="100" cy="102" r="58" fill="url(#glass-idle)" stroke="#a0beff" stroke-opacity="0.38" stroke-width="1.6"/>
+    <ellipse cx="74" cy="72" rx="24" ry="13" fill="#ffffff" opacity="0.08" transform="rotate(-26 74 72)"/>
+    <ellipse cx="68" cy="64" rx="8" ry="4.6" fill="#ffffff" opacity="0.12" transform="rotate(-26 68 64)"/>
+    <ellipse cx="64" cy="124" rx="12" ry="7" fill="#ff9ad5" opacity="0.22"/>
+    <ellipse cx="136" cy="124" rx="12" ry="7" fill="#ff9ad5" opacity="0.22"/>
+
+    <path d="M65.98 90.5 C61 118.5 99 118.5 94.02 90.5 Z" fill="url(#eye-idle)" stroke="#9df6ff" stroke-opacity="0.45" stroke-width="1.6"/>
+    <path d="M105.98 90.5 C101 118.5 139 118.5 134.02 90.5 Z" fill="url(#eye-idle)" stroke="#9df6ff" stroke-opacity="0.45" stroke-width="1.6"/>
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0 0;0 1.8;0 0" dur="5.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+      <circle cx="80" cy="98.5" r="6.4" fill="#9df6ff"/>
+      <circle cx="77.8" cy="95.9" r="2.4" fill="#ffffff" opacity="0.9"/>
+      <circle cx="120" cy="98.5" r="6.4" fill="#9df6ff"/>
+      <circle cx="117.8" cy="95.9" r="2.4" fill="#ffffff" opacity="0.9"/>
+    </g>
+    <path d="M91 129 Q100 137 109 129" fill="none" stroke="#9df6ff" stroke-width="3.6" stroke-linecap="round"/>
+    <g transform="translate(150 54)">
+      <g>
+        <animateTransform attributeName="transform" type="translate" values="0 0;0 -6;0 0" dur="5.2s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+        <path d="M-6 -6 H6 L-6 6 H6" fill="none" stroke="#9df6ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
+          <animate attributeName="opacity" values="0.3;0.8;0.3" dur="5.2s" repeatCount="indefinite"/>
+        </path>
+      </g>
+    </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

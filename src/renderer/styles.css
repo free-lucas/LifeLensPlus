@@ -1,0 +1,750 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px 24px 32px;
+  min-height: 100vh;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 14px;
+  color: #f5f8ff;
+  text-shadow: 0 1px 3px rgba(6, 10, 22, 0.5);
+  background:
+    linear-gradient(200deg, rgba(6, 10, 22, 0.22) 0%, rgba(6, 10, 22, 0.62) 100%),
+    url("assets/background.jpg") center / cover no-repeat fixed;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+h1 { margin: 0; font-size: 20px; letter-spacing: 0.02em; }
+.subtitle { margin: 4px 0 0; color: #d3dcf0; font-size: 12px; }
+
+/* 液态玻璃质感：半透明底色 + 背景模糊 + 高光描边 */
+header,
+.panel,
+.stat-card,
+.ask-answer-body,
+.records li {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 22px;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.07) 100%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+  box-shadow:
+    0 10px 34px rgba(4, 8, 20, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ---- 控制与状态 ---- */
+.panel { margin-top: 18px; padding: 16px 18px; }
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #e9effc;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 12px;
+  text-shadow: none;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+button {
+  padding: 8px 16px;
+  font: inherit;
+  color: #f6f9ff;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.08));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 14px rgba(4, 8, 20, 0.28);
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease, border-color 0.14s ease, opacity 0.14s ease;
+}
+button:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.6); }
+button:active:not(:disabled) { transform: translateY(0); box-shadow: inset 0 2px 6px rgba(4, 8, 20, 0.35); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+button.primary {
+  color: #0b2a4a;
+  text-shadow: none;
+  border-color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(160deg, rgba(228, 245, 255, 0.96), rgba(150, 205, 255, 0.78));
+}
+button.primary:hover:not(:disabled) { background: linear-gradient(160deg, rgba(240, 250, 255, 1), rgba(170, 216, 255, 0.88)); }
+
+button.danger {
+  color: #40100a;
+  text-shadow: none;
+  border-color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(160deg, rgba(255, 228, 222, 0.96), rgba(255, 150, 130, 0.82));
+}
+
+.status-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 44px;
+  margin: 18px 0 0;
+  padding: 0;
+}
+.status-grid dt { margin-bottom: 6px; color: #cfd9ee; font-size: 12px; }
+.status-grid dd {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.status-grid .rel { color: #c4cfe6; font-size: 12px; font-weight: 400; }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #9aa6bf; }
+.dot.on { background: #6ff0a8; box-shadow: 0 0 9px rgba(111, 240, 168, 0.9); }
+.dot.busy { background: #ffd166; box-shadow: 0 0 9px rgba(255, 209, 102, 0.9); animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.panel-note { margin: 14px 0 0; color: #c7d2e8; font-size: 12px; }
+
+/* ---- 统计卡片 ---- */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 14px; }
+.stat-card { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; }
+.stat-label { color: #cfd9ee; font-size: 12px; }
+.stat-value { font-size: 30px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat-value.alert { color: #ff9c8c; }
+
+/* ---- 分析结果 ---- */
+.records { margin-top: 22px; }
+.records .panel-title { margin-bottom: 12px; }
+.records ol { list-style: none; margin: 0; padding: 0; }
+.records li { margin-bottom: 12px; padding: 14px 16px; }
+.record-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.record-time { font-weight: 600; font-variant-numeric: tabular-nums; }
+button.spacer { margin-left: auto; }
+.record-head button { padding: 4px 12px; font-size: 12px; }
+
+.record ul { margin: 0; padding-left: 18px; color: #eef3ff; }
+.record li {
+  padding: 0;
+  margin: 0 0 3px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.record.pending { color: #ffe0a8; font-style: italic; }
+.record-activity { margin: 0 0 4px; font-weight: 600; }
+.record-summary { margin: 0; color: #eef3ff; }
+.record-meta { margin: 8px 0 0; font-size: 12px; color: #c4cfe6; }
+.record-keywords { margin: 4px 0 0; font-size: 12px; color: #c4cfe6; }
+.record.failed { color: #ffd9d2; }
+
+/* ---- 时间线筛选栏（Phase 7.3）---- */
+.timeline-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.timeline-search {
+  flex: 1 1 200px;
+  min-width: 160px;
+  max-width: 320px;
+  padding: 8px 14px;
+  font: inherit;
+  color: #f6f9ff;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.timeline-search::placeholder { color: #cbd6ea; }
+
+.timeline-select {
+  padding: 8px 12px;
+  font: inherit;
+  color: #f6f9ff;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(18, 26, 44, 0.62);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+/* 展开后的选项由系统绘制，用浅底深字保证可读。 */
+.timeline-select option { color: #0d1220; background: #eef3ff; }
+
+.timeline-search:focus,
+.timeline-select:focus,
+.timeline-custom-range input:focus { outline: none; border-color: rgba(255, 255, 255, 0.72); }
+
+.timeline-custom-range { display: flex; align-items: center; gap: 6px; }
+/* hidden 属性本来会 display:none，但上面的 display:flex 会盖掉它，这里显式补一条。 */
+.timeline-custom-range[hidden] { display: none; }
+.timeline-custom-range input[type="date"] {
+  padding: 7px 10px;
+  font: inherit;
+  color: #f6f9ff;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(18, 26, 44, 0.62);
+}
+.timeline-custom-range input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+.timeline-range-sep { color: #cbd6ea; }
+
+/* 「清除筛选」贴到最后，筛选条件换行时也不会挤在中间。 */
+.timeline-clear { margin-left: auto; padding: 8px 14px; font-size: 13px; }
+
+/* ---- 活动时间线 ---- */
+.timeline-state,
+.timeline-empty { margin: 0; padding: 22px 16px; color: #e2e9f8; text-align: center; }
+.timeline-empty p { margin: 0; }
+.timeline-empty p + p { margin-top: 6px; font-size: 12px; color: #cfd9ee; }
+
+.timeline-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #ffe9e5;
+  border: 1px solid rgba(255, 160, 150, 0.5);
+  border-radius: 16px;
+  background: linear-gradient(140deg, rgba(255, 120, 110, 0.32), rgba(160, 40, 30, 0.34));
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.timeline-day { margin-bottom: 18px; }
+.timeline-day:last-child { margin-bottom: 0; }
+.timeline-day-label {
+  margin: 0 0 10px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #dbe4f7;
+}
+.timeline-list { list-style: none; margin: 0; padding: 0; }
+
+.timeline-card { display: flex; align-items: flex-start; gap: 14px; }
+.timeline-media { flex: 0 0 auto; }
+.timeline-body { flex: 1 1 auto; min-width: 0; }
+
+/* 缩略图只是用 CSS 压住显示尺寸，不生成小图文件。 */
+.timeline-thumb {
+  display: block;
+  width: 168px;
+  height: 104px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 18px rgba(4, 8, 20, 0.32);
+}
+.timeline-thumb-missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #cbd6ea;
+}
+
+.timeline-status {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  white-space: nowrap;
+  text-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.timeline-status-pending { color: #ffe9bc; background: rgba(255, 205, 110, 0.26); border-color: rgba(255, 215, 130, 0.5); }
+.timeline-status-completed { color: #dffaeb; background: rgba(110, 230, 170, 0.22); border-color: rgba(120, 235, 170, 0.42); }
+.timeline-status-failed { color: #ffe2dc; background: rgba(255, 110, 95, 0.32); border-color: rgba(255, 160, 150, 0.5); }
+
+.timeline-footer { display: flex; justify-content: center; margin-top: 14px; }
+
+/* ---- 状态胶囊与错误提示 ---- */
+.pill {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  text-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.pill-on { background: rgba(120, 235, 170, 0.32); color: #e6fff1; }
+.pill-off { background: rgba(255, 255, 255, 0.2); color: #eef2fb; }
+.pill-busy { background: rgba(255, 214, 130, 0.4); color: #4a3000; }
+
+.error {
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  color: #ffe9e5;
+  border: 1px solid rgba(255, 160, 150, 0.5);
+  border-radius: 18px;
+  background: linear-gradient(140deg, rgba(255, 120, 110, 0.35), rgba(160, 40, 30, 0.38));
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 24px rgba(60, 10, 5, 0.35);
+  font-size: 13px;
+}
+
+/* ---- AI 队列 ---- */
+.ai-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #e7eefc;
+}
+.ai-stats b { font-variant-numeric: tabular-nums; }
+
+.ai-log {
+  list-style: none;
+  max-height: 150px;
+  margin: 14px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  color: #dbe4f6;
+}
+.ai-log li { display: flex; gap: 10px; padding: 3px 0; }
+.ai-log li.empty { justify-content: center; font-family: inherit; color: #e2e9f8; }
+.ai-log-time { color: #a9b6d0; }
+.ai-log-event { color: #bfe6ff; }
+.ai-log-meta { color: #a9b6d0; }
+
+/* ---- 标签页（Phase 8）---- */
+.header-pills { display: flex; align-items: center; gap: 8px; }
+
+.tabs { display: flex; gap: 8px; margin-top: 14px; }
+.tab {
+  padding: 7px 20px;
+  font-size: 13px;
+  border-radius: 999px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
+}
+.tab.active {
+  color: #0b2a4a;
+  text-shadow: none;
+  border-color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(160deg, rgba(228, 245, 255, 0.96), rgba(150, 205, 255, 0.78));
+}
+
+/* 两个视图互斥显示：靠 hidden 属性，不要给 .view 写 display ——
+   作者样式表的 display 会盖掉 UA 样式表的 [hidden] { display: none }，两个页面会同时显示。 */
+
+/* ---- 动态：10 分钟热力图 ---- */
+.heatmap-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 14px; font-size: 12px; color: #dbe4f7; }
+.heatmap-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.heatmap-legend-item .heat-cell { width: 14px; height: 14px; border-radius: 4px; }
+
+.heatmap {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 10px;
+  align-items: center;
+}
+.heatmap-rows {
+  display: grid;
+  grid-template-rows: repeat(6, 18px);
+  gap: 4px;
+  font-size: 10px;
+  color: #cfd9ee;
+  text-align: right;
+}
+.heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(6, 18px);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+.heatmap-hours {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
+  font-size: 10px;
+  color: #cfd9ee;
+  text-align: center;
+}
+
+/* 方块既是图例又是可点按钮：把全局 button 的圆角 / 内边距 / 阴影覆盖掉。 */
+.heat-cell {
+  min-height: 18px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+button.heat-cell { cursor: pointer; }
+button.heat-cell:hover { transform: translateY(-1px); border-color: rgba(255, 255, 255, 0.65); }
+.heat-cell.future { opacity: 0.22; }
+.heat-cell.selected { border-color: #ffffff; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55); }
+
+/* 活动分类配色：热力图方块与时间线标签共用。 */
+.cat-fun { background: rgba(255, 150, 110, 0.78); }
+.cat-work { background: rgba(120, 190, 255, 0.78); }
+.cat-study { background: rgba(120, 235, 170, 0.74); }
+.cat-social { background: rgba(200, 160, 255, 0.74); }
+.cat-pending { background: rgba(255, 205, 110, 0.5); }
+
+.heatmap-detail {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 18px;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06));
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.heatmap-detail h3 { margin: 0 0 8px; font-size: 14px; }
+.heatmap-detail p { margin: 0 0 6px; font-size: 13px; color: #e7eefc; }
+
+/* ---- 动态：区块时间线 ---- */
+.dynamics-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.dynamics-range { font-weight: 600; font-variant-numeric: tabular-nums; }
+.dynamics-day { margin-left: auto; font-size: 12px; color: #cbd6ea; }
+.dynamics-category {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #0d1220;
+  text-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.dynamics-project { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+.dynamics-description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #e7eefc;
+  white-space: pre-wrap;
+}
+.dynamics-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.dynamics-tag {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #eaf1ff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.16);
+}
+.dynamics-todos { margin: 10px 0 0; font-size: 12px; color: #ffe9bc; }
+.dynamics-pending { margin: 0; font-size: 13px; color: #ffe9bc; }
+.dynamics-failed { margin: 0; font-size: 13px; color: #ffcfc7; }
+
+.dynamics-status { margin: 12px 0 0; font-size: 12px; color: #cfd9ee; text-align: center; }
+.dynamics-sentinel { height: 1px; }
+
+/* ---- 日记页（Phase 9）---- */
+.cal-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cal-title { min-width: 96px; font-size: 14px; font-weight: 600; text-align: center; }
+.cal-nav { padding: 2px 14px; font-size: 15px; line-height: 1.4; }
+.cal-today { margin-left: auto; padding: 6px 14px; font-size: 12px; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cal-weekday { padding-bottom: 2px; font-size: 11px; color: #cfd9ee; text-align: center; }
+
+/* 格子既是按钮也可能是 span（补位的相邻月份）：两种标签共用这一套外观。 */
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 4px 0;
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+span.cal-cell { cursor: default; }
+.cal-cell .cal-day { font-variant-numeric: tabular-nums; }
+.cal-cell.today { border-color: rgba(255, 255, 255, 0.55); }
+.cal-cell.selected {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+.cal-cell.outside { opacity: 0.32; }
+.cal-cell.future { opacity: 0.4; }
+
+/* 分类配色复用 .cat-*，这里只管圆点的尺寸与「还没生成」的几种状态。 */
+.cal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: transparent;
+}
+.cal-dot.cat-fun,
+.cal-dot.cat-work,
+.cal-dot.cat-study,
+.cal-dot.cat-social { border-color: transparent; }
+.cal-dot-pending { background: rgba(255, 205, 110, 0.85); border-color: transparent; }
+.cal-dot-failed { background: rgba(255, 130, 115, 0.9); border-color: transparent; }
+.cal-dot-muted { background: rgba(255, 255, 255, 0.3); border-color: transparent; }
+
+.diary-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.diary-head-text { flex: 1 1 auto; min-width: 0; }
+.diary-date { margin: 0; font-size: 16px; }
+.diary-meta { margin: 4px 0 0; font-size: 12px; color: #cfd9ee; }
+.diary-regen { flex: 0 0 auto; padding: 6px 14px; font-size: 12px; }
+.diary-state { margin: 0; padding: 14px 0; font-size: 13px; color: #e2e9f8; }
+.diary-note { margin: 12px 0 0; font-size: 12px; color: #ffe9bc; }
+.diary-section { margin-bottom: 14px; }
+.diary-section:last-child { margin-bottom: 0; }
+.diary-section h4 { margin: 0 0 6px; font-size: 13px; color: #dbe4f7; }
+.diary-summary { margin: 0; font-size: 14px; line-height: 1.8; color: #eef3ff; }
+.diary-list { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.75; color: #eef3ff; }
+.diary-list li { margin-bottom: 3px; }
+.diary-events li { font-weight: 600; }
+.diary-empty { margin: 0; font-size: 13px; color: #b9c4da; }
+.diary-status { margin: 14px 0 0; font-size: 12px; color: #ffe9bc; }
+
+/* ---- 看板页（Phase 9）---- */
+.kanban-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.kanban-periods { display: flex; gap: 6px; }
+.kanban-period { padding: 6px 16px; font-size: 13px; }
+.kanban-period.active {
+  color: #0b2a4a;
+  text-shadow: none;
+  border-color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(160deg, rgba(228, 245, 255, 0.96), rgba(150, 205, 255, 0.78));
+}
+.kanban-nav { display: flex; align-items: center; gap: 6px; }
+.kanban-nav button { padding: 3px 13px; font-size: 16px; line-height: 1.3; }
+.kanban-label { min-width: 160px; font-size: 13px; font-weight: 600; text-align: center; }
+.kanban-date {
+  margin-left: auto;
+  padding: 7px 10px;
+  font: inherit;
+  color: #f6f9ff;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(18, 26, 44, 0.62);
+}
+.kanban-date::-webkit-calendar-picker-indicator { filter: invert(1); }
+.kanban-date:focus { outline: none; border-color: rgba(255, 255, 255, 0.72); }
+
+.kanban-cards { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 16px; }
+.stat-note { font-size: 11px; color: #ffd9a8; }
+.kanban-status { margin: 12px 0 0; font-size: 12px; color: #cfd9ee; }
+
+.kanban-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.chart-panel { margin-top: 0; }
+/* 趋势图横跨整行：分桶多的时候窄栏看不清。 */
+.chart-wide { grid-column: 1 / -1; }
+.chart-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e9effc;
+}
+.chart-note { font-size: 11px; font-weight: 400; font-style: normal; color: #b9c4da; }
+.chart-foot { margin: 12px 0 0; font-size: 11px; color: #b9c4da; }
+
+/* 图表全部是 SVG：颜色走 fill / stroke，不用内联 style（CSP 会挡掉 style 属性）。 */
+.chart-svg { display: block; width: 100%; height: auto; }
+
+.chart-donut-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+.chart-donut { flex: 0 0 auto; width: 148px; height: 148px; }
+.donut-track { fill: none; stroke: rgba(255, 255, 255, 0.14); }
+.donut-slice { fill: none; }
+.donut-slice.cat-fun { stroke: rgba(255, 150, 110, 0.9); }
+.donut-slice.cat-work { stroke: rgba(120, 190, 255, 0.9); }
+.donut-slice.cat-study { stroke: rgba(120, 235, 170, 0.88); }
+.donut-slice.cat-social { stroke: rgba(200, 160, 255, 0.88); }
+.donut-slice.chart-bar-other { stroke: rgba(190, 190, 205, 0.85); }
+.donut-total { fill: #f5f8ff; font-size: 22px; font-weight: 700; text-anchor: middle; }
+.donut-unit { fill: #cfd9ee; font-size: 9px; text-anchor: middle; }
+
+.chart-legend { flex: 1 1 160px; margin: 0; padding: 0; list-style: none; }
+.chart-legend-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; }
+.chart-swatch { flex: 0 0 auto; width: 10px; height: 10px; border-radius: 3px; }
+.chart-swatch-empty { background: rgba(255, 255, 255, 0.2); }
+.chart-legend-value { margin-left: auto; color: #cfd9ee; font-variant-numeric: tabular-nums; }
+
+.chart-grid { stroke: rgba(255, 255, 255, 0.14); stroke-width: 1; stroke-dasharray: 3 4; }
+.chart-tick { fill: #cfd9ee; font-size: 9px; text-anchor: end; }
+.chart-label { fill: #cfd9ee; font-size: 9px; text-anchor: middle; }
+.chart-label-future { fill: rgba(207, 217, 238, 0.45); }
+.chart-bar { fill: rgba(255, 255, 255, 0.35); }
+.chart-bar.cat-fun { fill: rgba(255, 150, 110, 0.85); }
+.chart-bar.cat-work { fill: rgba(120, 190, 255, 0.85); }
+.chart-bar.cat-study { fill: rgba(120, 235, 170, 0.8); }
+.chart-bar.cat-social { fill: rgba(200, 160, 255, 0.8); }
+.chart-bar-other { fill: rgba(190, 190, 205, 0.75); }
+.chart-line { fill: none; stroke: rgba(255, 255, 255, 0.78); stroke-width: 1.6; stroke-linejoin: round; }
+.chart-dot { fill: #ffffff; opacity: 0.85; }
+
+.chart-rank-label { fill: #e7eefc; font-size: 10px; }
+.chart-rank-track { fill: rgba(255, 255, 255, 0.1); }
+.chart-rank-bar { fill: rgba(150, 205, 255, 0.85); }
+.chart-rank-bar.rank-bar-1 { fill: rgba(120, 235, 170, 0.8); }
+.chart-rank-bar.rank-bar-2 { fill: rgba(255, 190, 130, 0.82); }
+.chart-rank-bar.rank-bar-3 { fill: rgba(200, 160, 255, 0.8); }
+.chart-rank-value { fill: #cfd9ee; font-size: 10px; text-anchor: end; font-variant-numeric: tabular-nums; }
+
+.chart-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.chart-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #eef3ff;
+}
+.chart-tag b { font-size: 10px; font-weight: 500; color: #cfd9ee; }
+.chart-tag.tag-lg { font-size: 15px; }
+.chart-tag.tag-md { font-size: 13px; }
+.chart-tag.tag-sm { font-size: 12px; opacity: 0.85; }
+
+.chart-todos { margin: 0; padding: 0; list-style: none; }
+.chart-todo {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.chart-todo:last-child { border-bottom: 0; }
+.chart-todo-text { flex: 1 1 auto; }
+.chart-todo-day { color: #b9c4da; font-size: 11px; font-variant-numeric: tabular-nums; }
+
+/* ---- 记忆搜索页（Phase 11）---- */
+.search-bar { display: flex; align-items: center; gap: 10px; }
+
+/* 搜索框是这一页的主角：比筛选栏的关键词框更大、留白更多。 */
+.search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 13px 20px;
+  font: inherit;
+  font-size: 15px;
+  color: #f6f9ff;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  background: rgba(18, 26, 44, 0.55);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+.search-input::placeholder { color: #cbd6ea; }
+.search-input:focus { outline: none; border-color: rgba(255, 255, 255, 0.78); background: rgba(18, 26, 44, 0.7); }
+
+.search-bar button { padding: 11px 26px; font-size: 14px; }
+
+.search-status { margin: 14px 0 0; font-size: 12px; color: #cfd9ee; }
+.search-status.error { color: #ffd9d2; }
+
+/* 结果卡片沿用记录卡的玻璃质感，只补来源标签与点击态。 */
+.search-results { list-style: none; margin: 16px 0 0; padding: 0; }
+.search-card { margin-bottom: 12px; padding: 14px 16px; cursor: pointer; }
+.search-card:hover { border-color: rgba(255, 255, 255, 0.55); }
+.search-card:last-child { margin-bottom: 0; }
+
+.search-source {
+  padding: 3px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.18);
+}
+.search-source-activity { background: rgba(120, 190, 255, 0.28); }
+.search-source-block { background: rgba(120, 235, 170, 0.26); }
+.search-source-diary { background: rgba(200, 160, 255, 0.28); }
+
+.search-missing-line { margin: 0; font-size: 13px; color: #ffe0a8; font-style: italic; }
+
+.search-recent { margin-top: 20px; }
+.search-recent-title { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #dbe4f7; }
+.search-recent-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.search-recent-item { padding: 6px 14px; font-size: 12px; }
+
+/* 时间线里的「已定位」横幅：与筛选栏同一行的视觉语言，但明显是一块提示。 */
+.timeline-focus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #eef3ff;
+  border: 1px solid rgba(150, 205, 255, 0.5);
+  border-radius: 16px;
+  background: linear-gradient(140deg, rgba(150, 205, 255, 0.24), rgba(80, 130, 200, 0.18));
+}
+.timeline-focus button { margin-left: auto; padding: 4px 12px; font-size: 12px; }
+
+/* 定位到的那一条：左侧一条高亮边，不改变卡片尺寸，避免滚动位置跳动。 */
+.timeline-card-focus {
+  border-color: rgba(150, 205, 255, 0.75);
+  box-shadow:
+    0 10px 34px rgba(4, 8, 20, 0.4),
+    inset 3px 0 0 rgba(150, 205, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ---- 问答页（Phase 12）---- */
+.ask-answer { margin-top: 16px; }
+.ask-answer-body { padding: 16px 18px; }
+.ask-answer-text { margin: 0; line-height: 1.75; white-space: pre-wrap; }
+.ask-answer-meta { margin: 10px 0 0; font-size: 12px; color: #cfd9ee; }
+
+.ask-memories { margin-top: 22px; }
+
+/* ---- 悬浮入口的退出按钮（Phase 13）---- */
+/* 关窗口只隐藏、不退出，所以头部状态区要有一个显式入口。
+   尺寸压到和状态胶囊一致，其余沿用全局 button 的玻璃质感。 */
+.quit-button {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+}

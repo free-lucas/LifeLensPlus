@@ -1,0 +1,47 @@
+# 依赖与构建产物
+node_modules/
+dist/
+out/
+
+# 日志
+*.log
+
+# 本地运行数据与索引
+.gitnexus/
+lifelens.db
+lifelens.db-*
+lancedb/
+*.lance
+
+# 内部开发资料（不进入公开仓库）
+.claude/
+/AGENTS.md
+/CLAUDE.md
+/promt/
+/promt.md
+/变更审查/
+/patchtool-probe.txt
+/images/
+
+# 密钥与本地环境
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+id_rsa
+id_ed25519
+credentials*
+.secrets*
+*.secret
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
