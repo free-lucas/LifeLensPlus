@@ -153,6 +153,9 @@ flowchart LR
 - **界面**：手写 SVG 图表、玻璃拟态样式、无外部 UI 库
 - **测试**：Node 自带 `node --test`，Ollama 全部 mock，不需要 GPU
 
+## 详细设计
+参考 ![docs]
+
 ## 快速开始
 
 ### 1. 环境要求
