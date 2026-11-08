@@ -154,7 +154,7 @@ flowchart LR
 - **测试**：Node 自带 `node --test`，Ollama 全部 mock，不需要 GPU
 
 ## 详细设计
-参考 [中文](docs/index.html)
+参考 [README.md](../../docs/README.md)
 
 ## 快速开始
 
