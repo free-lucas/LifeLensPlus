@@ -6,7 +6,7 @@
 
 No manual journaling. No cloud account. Nothing leaves your machine.
 
-[中文](README.md) · [English](README.en.md)
+[中文](README.md) · [English](README.en.md) · [Français](README.fr.md)
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-6f7cff)
