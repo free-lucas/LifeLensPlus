@@ -1,7 +1,7 @@
 # LifeLensPlus 项目文档
 
 本目录保存项目的功能与架构说明，按主题拆成多个文件，避免单一文档过长。
-项目介绍、运行截图与快速开始见根目录 [README.md](../README.md) / [README.en.md](../README.en.md)。
+项目介绍、运行截图与快速开始见根目录 [README.md](../README.md) / [README.en.md](../README.en.md) / [README.fr.md](../README.fr.md)。
 
 | 文档 | 内容 |
 | --- | --- |
